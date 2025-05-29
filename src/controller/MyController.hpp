@@ -1,10 +1,11 @@
 #ifndef MyController_hpp
 #define MyController_hpp
-
+#include "/usr/local/git_clone/HH-task-oatpp/utility/Urllib/Urllib.hpp"
 #include "dto/DTOs.hpp"
 #include "oatpp/web/server/api/ApiController.hpp"
 #include "oatpp/macro/codegen.hpp"
 #include "oatpp/macro/component.hpp"
+//#include "oatpp/encoding/Percent.hpp"
 
 #include OATPP_CODEGEN_BEGIN(ApiController) //<-- Begin Codegen
 
@@ -14,6 +15,7 @@ public:
     : oatpp::web::server::api::ApiController(apiContentMappers) {}
 
 public:
+
 
  ENDPOINT("GET", "/hello/", root) {
     auto dto = MyDto::createShared();
@@ -26,19 +28,13 @@ public:
            QUERY(String, name),
            QUERY(String, message))
   {
-    OATPP_LOGd("AsdRequest", "name=%s, message=%s", name->c_str(), message->c_str());
-    oatpp::String responseMessage = oatpp::String("Name + Message: ") + name + ", " + message;
+	Urllib::Decode decode;
+	std::string dd_message = decode.decodeString(message);
+	std::string dd_name = decode.decodeString(name);
+    OATPP_LOGd("AsdRequest", "name=%s, message=%s", dd_name, dd_message);
+    oatpp::String responseMessage = oatpp::String("Имя и сообщение: " + dd_name + ", " + dd_message);
     return createResponse(Status::CODE_200, responseMessage);
   }
-
-  ENDPOINT("GET", "/greet/{name}", greetUser,
-           PATH(String, name))
-  {
-    oatpp::String greeting = oatpp::String("Hello, ") + name + "!";
-    return createResponse(Status::CODE_200, greeting);
-  }
-
-
 
   ENDPOINT_INFO(getHelloByName) {
     info->summary = "Hello message";
@@ -51,9 +47,12 @@ public:
   ENDPOINT("GET", "/hello/{message}/{name}", getHelloByName,
            PATH(String, name,"name"),
 	   PATH(String,message,"message")) {
-	String response;
-	if(message) response = message + " " + name + "!"; 
-        else response = "Greetings, " + name + "!";
+	Urllib::Decode decode;
+	std::string dd_message = decode.decodeString(message);
+	std::string  dd_name = decode.decodeString(name);
+	std::string response;
+	if(message) response = dd_message + " " + dd_name + "!"; 
+        else response = "Greetings, " + dd_name + "!";
     return createResponse(Status::CODE_200, response);
   }
 };
